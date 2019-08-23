@@ -32,9 +32,9 @@
     <script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
 	<script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
 </head>
-<body>
+<body onload="initMap()">
 <div id="container"></div>
-<div id="myPageTop" style="width:500px;padding-left:120px;">
+<div id="myPageTop">
     <table>
 		<tr>
             <td style="text-align:center">
@@ -53,7 +53,7 @@
         </tr>
 		<tr>
             <td>
-                <label>运费：<input id="freight" style="margin-left:12px;"/> 元/吨</label>
+                <label>运费：<input id="freight" style="margin-left:12px;"/> 元/吨公里</label>
             </td>
         </tr>
 		<tr>
@@ -66,25 +66,55 @@
                 <label><button onclick="doSearch()">搜索</button></label>
             </td>
         </tr>
+		<tr>
+            <td>
+                <label><div id="resultStr"></div></label>
+            </td>
+        </tr>
     </table>
 </div>
 <div id="panel"></div>
 <script type="text/javascript">
-    //地图加载
-    var map = new AMap.Map("container", {
-        resizeEnable: true
-    });
-	//货车路线规参数对象
-	var truckOptions = {
-            map: map,
-            policy:0,
-            size:1,
-            city:'beijing',
-            panel:'panel'
-    };
-	var driving = new AMap.TruckDriving(truckOptions);//货车路线规划对象
+
+	var map = null;
+	var truckOptions = null;
+	var driving = null;
 	var startObj = null;
 	var endObj = null;
+	var tipinput = document.getElementById("tipinput");
+	var tipinput2 = document.getElementById("tipinput2");
+	var freight = document.getElementById("freight");
+	var coalQuantity = document.getElementById("coal-quantity");
+	var resultStrObj = document.getElementById("resultStr");
+	
+	//初始化地图
+	function initMap(){
+		//地图加载
+		map = new AMap.Map("container", {
+			resizeEnable: true
+		});
+		//货车路线规参数对象
+		/*var truckOptions = {
+				map: map,
+				policy:0,
+				size:1,
+				city:'beijing',
+				panel:'panel'
+		};*/
+		truckOptions = {
+			policy: 0, // 规划策略
+			size: 1, // 车型大小
+			width: 2.5, // 宽度
+			height: 2, // 高度      
+			load: 1, // 载重
+			weight: 12, // 自重
+			axlesNum: 2, // 轴数
+			province: '京', // 车辆牌照省份
+		};
+		driving = new AMap.TruckDriving(truckOptions);//货车路线规划对象
+		startObj = null;
+		endObj = null;
+	}
 	
     //输入提示
     var autoOptions = {
@@ -122,18 +152,24 @@
 		path.push({lnglat:[location1.lng, location1.lat]});//起点
 		path.push({lnglat:[location2.lng, location2.lat]});//终点
 		driving.search(path, function(status, result) {
+		    //console.log(JSON.stringify(result));
 			// result即是对应的货车导航信息，相关数据结构文档请参考 https://lbs.amap.com/api/javascript-api/reference/route-search#m_DrivingResult
 			if (status === 'complete') {
-				alert('绘制货车路线完成')
+				 log.success('获取货车规划数据成功')
+				 if (result.routes && result.routes.length) {
+				    //console.log(result.routes[0].distance);//获取两地之间的导航的实际距离（米）
+					//console.log(result.routes[0].time);//获取两地之间距离所需要的时间（分钟）
+					drawRoute(result.routes[0]);
+				 }
 			} else {
-				alert('获取货车规划数据失败：' + result)
+				 log.error('获取货车规划数据失败：' + result)
 			}
 		});
 	}
 	
 	 // 获取搜索信息
     function autoInput(keywords,type){
-	  console.log(keywords);
+	  //console.log(keywords);
 	  if(keywords==null||keywords==''){
 		keywords = '河南能源化工集团';
 	  }
@@ -143,18 +179,18 @@
         }
         var placeSearch = new AMap.PlaceSearch(autoOptions);
         placeSearch.search(keywords, function(status, result) {
-		  console.log(JSON.stringify(result));
+		  //console.log(JSON.stringify(result));
 		  if(type==1){//始发站
 		    if(result.poiList==undefined){
-			  alert("未搜索到始发站信息");
+			  log.error("未搜索到始发站信息");
 			}else{
-			console.log(JSON.stringify(result.poiList.pois[0]));
+				//console.log(JSON.stringify(result.poiList.pois[0]));
 				startObj = result.poiList.pois[0];//搜索结果比较多，默认取第0个
 			}
 		  }
 		  if(type==2){//到运站
 		    if(result.poiList==undefined){
-			  alert("未搜索到始发站信息");
+			  log.error("未搜索到始发站信息");
 			}else{
 				endObj = result.poiList.pois[0];//搜索结果比较多，默认取第0个
 			}
@@ -169,43 +205,95 @@
     }
 	
 	function doSearch(){
-		var tipinput = document.getElementById("tipinput");
-		var tipinput2 = document.getElementById("tipinput2");
-		var freight = document.getElementById("freight");
-		var coalQuantity = document.getElementById("coal-quantity");
+		resultStrObj.innerHTML="";
 	    if(tipinput.value==null||tipinput.value==''){
-			alert("请输入始发站！");
+			log.error("请输入始发站！");
 			return;
 		}
 		if(tipinput2.value==null||tipinput2.value==''){
-			alert("请输入到货站！");
+			log.error("请输入到货站！");
 			return;
 		}
 		if(freight.value==null||freight.value==''){
-			alert("请输入运费！");
+			log.error("请输入运费！");
 			return;
 		}
 		if(coalQuantity.value==null||coalQuantity.value==''){
-			alert("请输入发煤量！");
+			log.error("请输入发煤量！");
 			return;
 		}
 		if(startObj==null){
 			//如果用户没有选择提示信息，则直接搜索关键字
 			autoInput(tipinput.value,1);
-			console.log(1111);
+			//console.log(1111);
 		}
 		if(endObj==null){
 			//如果用户没有选择提示信息，则直接搜索关键字
 			autoInput(tipinput2.value,2);
-			console.log(2222);
+			//console.log(2222);
 		}
 		if(startObj!=null&&endObj!=null){
 			drivingSearch(startObj.location,endObj.location);
 		}else{
-			alert("始发站或到货站信息未检索到，请根据输入框提示重新选择！");
+			log.error("始发站或到货站不存在，或站点不是货车可到达站点，请重新选择！");
 			return;
 		}
 	}
+	
+	//绘制路线图
+	function drawRoute (route) {
+        var path = parseRouteToPath(route)
+
+        var startMarker = new AMap.Marker({
+            position: path[0],
+            icon: 'https://webapi.amap.com/theme/v1.3/markers/n/start.png',
+            map: map
+        })
+
+        var endMarker = new AMap.Marker({
+            position: path[path.length - 1],
+            icon: 'https://webapi.amap.com/theme/v1.3/markers/n/end.png',
+            map: map
+        })
+
+        var routeLine = new AMap.Polyline({
+            path: path,
+            isOutline: true,
+            outlineColor: '#ffeeee',
+            borderWeight: 2,
+            strokeWeight: 5,
+            strokeColor: '#008000',
+            lineJoin: 'round'
+        })
+
+        routeLine.setMap(map);
+
+        // 调整视野达到最佳显示区域
+        map.setFitView([ startMarker, endMarker, routeLine ]);
+		
+		var distance = (parseFloat(route.distance)/1000).toFixed(2);
+		var time = (parseFloat(route.time)/3600).toFixed(2);
+		var money = (parseFloat(distance)*parseFloat(freight.value)*parseFloat(coalQuantity.value)).toFixed(2);
+		
+		var str = "<b>计算结果</b>：<br/>全程：<font color='blue'>"+distance+"</font>公里  "+"用时：<font color='#FF8C00'>"+time+"</font>小时"+"  运费：<font color='#32CD32'>"+money+"</font>元";
+		resultStrObj.innerHTML=str;
+    }
+
+    // 解析DrivingRoute对象，构造成AMap.Polyline的path参数需要的格式
+    // DrivingResult对象结构参考文档 https://lbs.amap.com/api/javascript-api/reference/route-search#m_DriveRoute
+    function parseRouteToPath(route) {
+        var path = []
+
+       for (var i = 0, l = route.steps.length; i < l; i++) {
+            var step = route.steps[i]
+
+            for (var j = 0, n = step.path.length; j < n; j++) {
+                path.push(step.path[j])
+            }
+        }
+
+        return path
+    }
 </script>
 </body>
 </html>
