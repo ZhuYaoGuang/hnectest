@@ -4,32 +4,88 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-    <title>输入提示后查询</title>
+    <title>煤炭货运线路运费计算工具</title>
+	<style>
+    html,
+    body,
+    #container {
+        width: 100%;
+        height: 100%;
+    }
+    #panel {
+        position: fixed;
+        background-color: white;
+        max-height: 90%;
+        overflow-y: auto;
+        top: 10px;
+        right: 300px;
+        width: 280px;
+    }
+    #panel .amap-lib-driving {
+   	    border-radius: 4px;
+        overflow: hidden;
+    }
+    </style>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
     <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css"/>
-    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=fd369c5e39c7598cf8fbbd294968835f&plugin=AMap.Autocomplete,AMap.PlaceSearch"></script>
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=fd369c5e39c7598cf8fbbd294968835f&plugin=AMap.Autocomplete,AMap.PlaceSearch,AMap.TruckDriving"></script>
     <script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+	<script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
 </head>
 <body>
 <div id="container"></div>
 <div id="myPageTop">
     <table>
-        <tr>
-            <td>
-                <label>请输入关键字：</label>
+		<tr>
+            <td style="text-align:center">
+                <label><img src="logo.jpg"  alt="hnec" style="width:100px;height:50px;"/></label>
             </td>
         </tr>
         <tr>
             <td>
-                <input id="tipinput"/>
+                <label>始发站：<input id="tipinput"/></label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>到货站：<input id="tipinput2"/></label>
+            </td>
+        </tr>
+		<tr>
+            <td>
+                <label>运费：<input id="freight" style="margin-left:14px;"/> 元/吨</label>
+            </td>
+        </tr>
+		<tr>
+            <td>
+                <label>发煤量：<input id="coal-quantity"/> 吨</label>
+            </td>
+        </tr>
+		<tr>
+            <td>
+                <label><button onclick="doSearch()">搜索</button></label>
             </td>
         </tr>
     </table>
 </div>
+<div id="panel"></div>
 <script type="text/javascript">
     //地图加载
     var map = new AMap.Map("container", {
         resizeEnable: true
     });
+	//货车路线规参数对象
+	var truckOptions = {
+            map: map,
+            policy:0,
+            size:1,
+            city:'beijing',
+            panel:'panel'
+    };
+	var driving = new AMap.TruckDriving(truckOptions);//货车路线规划对象
+	var startObj = null;
+	var endObj = null;
+	
     //输入提示
     var autoOptions = {
         input: "tipinput"
@@ -38,11 +94,118 @@
     var placeSearch = new AMap.PlaceSearch({
         map: map
     });  //构造地点查询类
-    AMap.event.addListener(auto, "select", select);//注册监听，当选中某条记录时会触发
-    function select(e) {
-        placeSearch.setCity(e.poi.adcode);
-        placeSearch.search(e.poi.name);  //关键字查询查询
+    AMap.event.addListener(auto, "select", select1);//注册监听，当选中某条记录时会触发
+    function select1(e) {
+        //placeSearch.setCity(e.poi.adcode);
+        //placeSearch.search(e.poi.name);  //关键字查询查询
+		autoInput(e.poi.name,1);
     }
+	
+	//输入提示
+    var autoOptions2 = {
+        input: "tipinput2"
+    };
+    var auto2 = new AMap.Autocomplete(autoOptions2);
+    var placeSearch2 = new AMap.PlaceSearch({
+        map: map
+    });  //构造地点查询类
+    AMap.event.addListener(auto2, "select", select2);//注册监听，当选中某条记录时会触发
+    function select2(e) {
+        //placeSearch.setCity(e.poi.adcode);
+        //placeSearch.search(e.poi.name);  //关键字查询查询
+		autoInput(e.poi.name,2);
+    }
+	
+	//搜索货车驾驶路线
+	function drivingSearch(location1,location2){
+		var path = [];
+		path.push({lnglat:[location1.lng, location1.lat]});//起点
+		path.push({lnglat:[location2.lng, location2.lat]});//终点
+		driving.search(path, function(status, result) {
+			// result即是对应的货车导航信息，相关数据结构文档请参考 https://lbs.amap.com/api/javascript-api/reference/route-search#m_DrivingResult
+			if (status === 'complete') {
+				alert('绘制货车路线完成')
+			} else {
+				alert('获取货车规划数据失败：' + result)
+			}
+		});
+	}
+	
+	 // 获取搜索信息
+    function autoInput(keywords,type){
+	  console.log(keywords);
+	  if(keywords==null||keywords==''){
+		keywords = '河南能源化工集团';
+	  }
+      AMap.plugin('AMap.PlaceSearch', function(){
+        var autoOptions = {
+          city: '全国'
+        }
+        var placeSearch = new AMap.PlaceSearch(autoOptions);
+        placeSearch.search(keywords, function(status, result) {
+		  console.log(JSON.stringify(result));
+		  if(type==1){//始发站
+		    if(result.poiList==undefined){
+			  alert("未搜索到始发站信息");
+			}else{
+			console.log(JSON.stringify(result.poiList.pois[0]));
+				startObj = result.poiList.pois[0];//搜索结果比较多，默认取第0个
+			}
+		  }
+		  if(type==2){//到运站
+		    if(result.poiList==undefined){
+			  alert("未搜索到始发站信息");
+			}else{
+				endObj = result.poiList.pois[0];//搜索结果比较多，默认取第0个
+			}
+		  }
+          // 搜索成功时，result即是对应的匹配数据
+          /*var node = new PrettyJSON.view.Node({
+              el: document.querySelector("#input-info"),
+              data: result
+          });*/
+        })
+      })
+    }
+	
+	function doSearch(){
+		var tipinput = document.getElementById("tipinput");
+		var tipinput2 = document.getElementById("tipinput2");
+		var freight = document.getElementById("freight");
+		var coalQuantity = document.getElementById("coal-quantity");
+	    if(tipinput.value==null||tipinput.value==''){
+			alert("请输入始发站！");
+			return;
+		}
+		if(tipinput2.value==null||tipinput2.value==''){
+			alert("请输入到货站！");
+			return;
+		}
+		if(freight.value==null||freight.value==''){
+			alert("请输入运费！");
+			return;
+		}
+		if(coalQuantity.value==null||coalQuantity.value==''){
+			alert("请输入发煤量！");
+			return;
+		}
+		if(startObj==null){
+			//如果用户没有选择提示信息，则直接搜索关键字
+			autoInput(tipinput.value,1);
+			console.log(1111);
+		}
+		if(endObj==null){
+			//如果用户没有选择提示信息，则直接搜索关键字
+			autoInput(tipinput2.value,2);
+			console.log(2222);
+		}
+		if(startObj!=null&&endObj!=null){
+			drivingSearch(startObj.location,endObj.location);
+		}else{
+			alert("始发站或到货站信息未检索到，请根据输入框提示重新选择！");
+			return;
+		}
+	}
 </script>
 </body>
 </html>
