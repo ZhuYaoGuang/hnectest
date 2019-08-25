@@ -25,6 +25,27 @@
    	    border-radius: 4px;
         overflow: hidden;
     }
+	input{
+		outline-style: none ;
+		border: 1px solid #ccc; 
+		border-radius: 3px;
+		padding: 3px 4px;
+		font-size: 14px;
+		font-weight: 700;
+		font-family: "Microsoft soft";
+    }
+	.button {
+		background-color: #008CBA; /* Blue */
+		border-radius: 12px;
+		border: none;
+		color: white;
+		padding: 8px 102px;
+		margin-top:5px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 13px;
+    }
     </style>
     <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
     <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css"/>
@@ -42,28 +63,28 @@
             </td>
         </tr>
         <tr>
-            <td>
+            <td style="text-align:center">
                 <label>始发站：<input id="tipinput"/></label>
             </td>
         </tr>
         <tr>
-            <td>
+            <td style="text-align:center">
                 <label>到货站：<input id="tipinput2"/></label>
             </td>
         </tr>
 		<tr>
-            <td>
-                <label>运费：<input id="freight" style="margin-left:12px;"/> 元/吨公里</label>
+            <td style="text-align:center">
+                <label>运费：<input id="freight" style="margin-left:12px;width:110px"/> 元/吨公里</label>
             </td>
         </tr>
 		<tr>
-            <td>
-                <label>发煤量：<input id="coal-quantity"/> 吨</label>
+            <td style="text-align:center">
+                <label>发煤量：<input id="coal-quantity" style="width:150px"/> 吨</label>
             </td>
         </tr>
 		<tr>
-            <td>
-                <label><button onclick="doSearch()">搜索</button></label>
+            <td style="text-align:center">
+                <label><button class="button" onclick="doSearch()">搜索</button></label>
             </td>
         </tr>
 		<tr>
@@ -276,7 +297,7 @@
 		var time = (parseFloat(route.time)/3600).toFixed(2);
 		var money = (parseFloat(distance)*parseFloat(freight.value)*parseFloat(coalQuantity.value)).toFixed(2);
 		
-		var str = "<b>计算结果</b>：<br/>全程：<font color='blue'>"+distance+"</font>公里  "+"用时：<font color='#FF8C00'>"+time+"</font>小时"+"  运费：<font color='#32CD32'>"+money+"</font>元";
+		var str = "运费：<font color='#32CD32'>"+money+"</font>元<br/>全程：<font color='blue'>"+distance+"</font>公里  "+"用时：<font color='#FF8C00'>"+time+"</font>小时";
 		resultStrObj.innerHTML=str;
     }
 
