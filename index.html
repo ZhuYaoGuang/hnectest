@@ -46,14 +46,37 @@
 		display: inline-block;
 		font-size: 13px;
     }
+	/*加载样式*/
+	.Loading {
+		position: absolute;
+		left: 43%;
+		top: 35%;
+		width: 140px;
+		height: 50px;
+		text-align: center;
+		background: #FAFAFF url(loading.gif) no-repeat 10px center;
+		z-index: 99999;
+		border: solid 1px #a9a9a9;
+	}
+	/*加载展示文本样式*/
+	.LoadingText {
+		position: absolute;
+		top: 20px;
+		left: 40px;
+		bottom: 5px;
+		text-aligh: center;
+		width: 80px;
+	}
     </style>
     <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
     <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css"/>
     <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=fd369c5e39c7598cf8fbbd294968835f&plugin=AMap.Autocomplete,AMap.PlaceSearch,AMap.TruckDriving"></script>
     <script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
 	<script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
+	<script src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
 </head>
 <body onload="initMap()">
+<div class="Loading" id="PageLoading" style="display: none;"><div class="LoadingText" id="schedule">正在加载中...</div></div>
 <div id="container"></div>
 <div id="myPageTop">
     <table>
@@ -226,6 +249,7 @@
     }
 	
 	function doSearch(){
+		console.log(2222);
 		resultStrObj.innerHTML="";
 		map.clearMap();//清除所有覆盖物
 	    if(tipinput.value==null||tipinput.value==''){
@@ -255,6 +279,8 @@
 			//console.log(2222);
 		}
 		if(startObj!=null&&endObj!=null){
+			//加载前加入显示缓冲效果
+			$("#PageLoading").show();
 			drivingSearch(startObj.location,endObj.location);
 		}else{
 			log.error("始发站或到货站不存在，或站点不是货车可到达站点，请重新选择！");
@@ -299,6 +325,8 @@
 		
 		var str = "运费：<font color='#32CD32'>"+money+"</font>元<br/>全程：<font color='blue'>"+distance+"</font>公里  "+"用时：<font color='#FF8C00'>"+time+"</font>小时";
 		resultStrObj.innerHTML=str;
+		//加载结束消除显示缓冲效果
+		$("#PageLoading").hide();
     }
 
     // 解析DrivingRoute对象，构造成AMap.Polyline的path参数需要的格式
