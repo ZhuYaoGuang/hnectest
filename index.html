@@ -97,12 +97,17 @@
         </tr>
 		<tr>
             <td style="text-align:center">
-                <label>运费：<input id="freight" style="margin-left:8px;width:110px"/> 元/吨公里</label>
+                <label>运价：<input id="freightRate" style="margin-left:8px;width:110px" value="0.45"/> 元/吨公里</label>
             </td>
         </tr>
 		<tr>
             <td style="text-align:center">
-                <label>发煤量：<input id="coal-quantity" style="width:155px"/> 吨</label>
+                <label>里程：<input id="mileage" style="margin-left:8px;width:140px;color:blue" placeholder="待计算" readonly/> 公里</label>
+            </td>
+        </tr>
+		<tr>
+            <td style="text-align:center">
+                <label>运费：<input id="freight" style="margin-left:8px;width:135px;color:#32CD32" placeholder="待计算" readonly/> 元/吨</label>
             </td>
         </tr>
 		<tr>
@@ -110,11 +115,11 @@
                 <label><button class="button" onclick="doSearch()">搜索</button></label>
             </td>
         </tr>
-		<tr>
+		<!-- <tr>
             <td>
                 <label><div id="resultStr"></div></label>
             </td>
-        </tr>
+        </tr> -->
     </table>
 </div>
 <div id="panel"></div>
@@ -127,9 +132,9 @@
 	var endObj = null;
 	var tipinput = document.getElementById("tipinput");
 	var tipinput2 = document.getElementById("tipinput2");
+	var freightRate = document.getElementById("freightRate");
+	var mileage = document.getElementById("mileage");
 	var freight = document.getElementById("freight");
-	var coalQuantity = document.getElementById("coal-quantity");
-	var resultStrObj = document.getElementById("resultStr");
 	
 	//初始化地图
 	function initMap(){
@@ -250,7 +255,9 @@
 	
 	function doSearch(){
 		console.log(2222);
-		resultStrObj.innerHTML="";
+		//resultStrObj.innerHTML="";
+		mileage.value="";
+		freight.value="";
 		map.clearMap();//清除所有覆盖物
 	    if(tipinput.value==null||tipinput.value==''){
 			log.error("请输入始发站！");
@@ -260,14 +267,14 @@
 			log.error("请输入到货站！");
 			return;
 		}
-		if(freight.value==null||freight.value==''){
-			log.error("请输入运费！");
+		if(freightRate.value==null||freightRate.value==''){
+			log.error("请输入运价！");
 			return;
 		}
-		if(coalQuantity.value==null||coalQuantity.value==''){
+		/*if(coalQuantity.value==null||coalQuantity.value==''){
 			log.error("请输入发煤量！");
 			return;
-		}
+		}*/
 		if(startObj==null){
 			//如果用户没有选择提示信息，则直接搜索关键字
 			autoInput(tipinput.value,1);
@@ -319,10 +326,13 @@
 		
 		var distance = (parseFloat(route.distance)/1000).toFixed(2);
 		var time = (parseFloat(route.time)/3600).toFixed(2);
-		var money = (parseFloat(distance)*parseFloat(freight.value)*parseFloat(coalQuantity.value)).toFixed(2);
+		//var money = (parseFloat(distance)*parseFloat(freightRate.value)*parseFloat(coalQuantity.value)).toFixed(2);
+		var money = (parseFloat(distance)*parseFloat(freightRate.value)).toFixed(2);
 		
-		var str = "运费：<font color='#32CD32'>"+money+"</font>元<br/>全程：<font color='blue'>"+distance+"</font>公里  "+"用时：<font color='#FF8C00'>"+time+"</font>小时";
-		resultStrObj.innerHTML=str;
+		//var str = "运费：<font color='#32CD32'>"+money+"</font>元<br/>全程：<font color='blue'>"+distance+"</font>公里  "+"用时：<font color='#FF8C00'>"+time+"</font>小时";
+		//resultStrObj.innerHTML=str;
+		mileage.value=distance;
+		freight.value=money;
 		//加载结束消除显示缓冲效果
 		document.getElementById('PageLoading').style.display='none';
     }
