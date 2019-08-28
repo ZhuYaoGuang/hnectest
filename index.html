@@ -82,30 +82,28 @@
 		<tr>
             <td style="text-align:center;">
                 <label><img src="logo.jpg"  alt="hnec" style="width:80px;height:40px;"/></label><br/>
-				<label>国贸集团运费查询系统</label>
+				<label style="font-size: 17px;">国贸集团运费查询系统</label>
             </td>
         </tr>
         <tr>
-            <td style="text-align:left;">
+            <td style="text-align:center;">
                 <label>始发站：<input id="tipinput" style="width: 120px;"/></label>
-                <label>到货站：<input id="tipinput2" style="width: 120px;/></label>
             </td>
         </tr>
         <tr>
             <td style="text-align:center;">
-                
+                <label>到货站：<input id="tipinput2" style="width: 120px;"/></label>
             </td>
         </tr>
 		<tr>
-            <td style="text-align:left;">
-                <label>运价：<input id="freightRate" style="margin-left:12px;width:120px" value="0.45"/> 元/吨公里</label>
-                
+            <td style="text-align:center;">
+                <label>运价：<input id="freightRate" style="margin-left:12px;width:64px" value="0.45"/> 元/吨公里</label>
             </td>
         </tr>
 		<tr>
-            <td style="text-align:left;">
-                <label>里程：<input id="mileage" style="margin-left:12px;width:120px;color:blue" placeholder="待计算" readonly/> 公里
-                <span style="margin-left: 2px;"> 运费：</span><input id="freight" style="margin-left:3px;width:90px;color:#32CD32" placeholder="待计算" readonly/> 元/吨</label>
+            <td style="text-align:center;">
+                <label>里程：<span id="mileage" style="color: blue;">&nbsp;&nbsp;&nbsp;</span> 公里</label>
+                <label style="margin-left: 2px;">运费：<span id="freight" style="color: #32CD32;"></span>元/吨</label>
             </td>
         </tr>
 		<tr>
@@ -115,7 +113,7 @@
         </tr>
 		<tr>
             <td style="text-align:center;">
-                <label><button class="button" onclick="doSearch()">搜索</button></label>
+                <label><button class="button" onclick="doSearch()">确定</button></label>
             </td>
         </tr>
 		<!-- <tr>
@@ -259,8 +257,8 @@
 	function doSearch(){
 		console.log(2222);
 		//resultStrObj.innerHTML="";
-		mileage.value="";
-		freight.value="";
+		mileage.innerHTML="&nbsp;&nbsp;&nbsp;";
+		freight.innerHTML="";
 		map.clearMap();//清除所有覆盖物
 	    if(tipinput.value==null||tipinput.value==''){
 			log.error("请输入始发站！");
@@ -334,8 +332,8 @@
 		
 		//var str = "运费：<font color='#32CD32'>"+money+"</font>元<br/>全程：<font color='blue'>"+distance+"</font>公里  "+"用时：<font color='#FF8C00'>"+time+"</font>小时";
 		//resultStrObj.innerHTML=str;
-		mileage.value=distance;
-		freight.value=money;
+		mileage.innerHTML=distance;
+		freight.innerHTML=money;
 		//加载结束消除显示缓冲效果
 		document.getElementById('PageLoading').style.display='none';
     }
